@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOGDANKA</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:black;
+color:gold;
+}
+
+header{
+padding:15px;
+font-size:26px;
+border-bottom:2px solid gold;
+}
+
+nav{
+display:flex;
+}
+
+nav button{
+flex:1;
+padding:15px;
+background:black;
+color:gold;
+border:none;
+cursor:pointer;
+}
+
+.section{
+display:none;
+padding:15px;
+}
+
+.active{
+display:block;
+}
+
+.box{
+background:white;
+border:2px solid gold;
+padding:6px;
+margin:5px 0;
+display:flex;
+gap:5px;
+}
+
+input{
+flex:1;
+padding:6px;
+}
+
+.small{
+background:red;
+color:white;
+border:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>BOGDANKA</header>
+
+<nav>
+<button onclick="openSec('pay')">Оплати фірми</button>
+<button onclick="openSec('inc')">Виторг фірми</button>
+</nav>
+
+<div id="pay" class="section active"></div>
+<div id="inc" class="section"></div>
+
+<script>
+
+function openSec(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+
+/* ===== ОПЛАТИ ===== */
+
+const months=[
+"Січень","Лютий","Березень","Квітень","Травень","Червень",
+"Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"
+];
+
+const payDiv=document.getElementById("pay");
+
+months.forEach((m,mi)=>{
+
+const block=document.createElement("div");
+block.innerHTML=`<h3>${m}</h3>`;
+
+const cont=document.createElement("div");
+
+const btn=document.createElement("button");
+btn.textContent="Додати";
+
+btn.onclick=()=>createPay(mi,cont);
+
+block.append(cont,btn);
+payDiv.appendChild(block);
+
+loadPay(mi,cont);
+
+});
+
+function savePay(mi,cont){
+const arr=[...cont.children].map(b=>({
+name:b.children[0].value,
+sum:b.children[1].value,
+date:b.children[2].value
+}));
+localStorage.setItem("pay"+mi,JSON.stringify(arr));
+}
+
+function loadPay(mi,cont){
+const data=JSON.parse(localStorage.getItem("pay"+mi)||"[]");
+data.forEach(d=>createPay(mi,cont,d));
+}
+
+function createPay(mi,cont,data={}){
+const box=document.createElement("div");
+box.className="box";
+
+const n=document.createElement("input");
+n.placeholder="Оплата";
+
+const s=document.createElement("input");
+s.placeholder="Сума";
+
+const d=document.createElement("input");
+d.placeholder="Дата";
+
+const del=document.createElement("button");
+del.textContent="X";
+del.className="small";
+
+if(data){
+n.value=data.name||"";
+s.value=data.sum||"";
+d.value=data.date||"";
+}
+
+[n,s,d].forEach(i=>i.oninput=()=>savePay(mi,cont));
+
+del.onclick=()=>{
+box.remove();
+savePay(mi,cont);
+}
+
+box.append(n,s,d,del);
+cont.appendChild(box);
+}
+
+/* ===== ВИТОРГ ===== */
+
+const incDiv=document.getElementById("inc");
+
+const year=document.createElement("input");
+year.type="number";
+year.value=new Date().getFullYear();
+
+incDiv.appendChild(year);
+
+const cal=document.createElement("div");
+incDiv.appendChild(cal);
+
+year.onchange=drawCal;
+
+drawCal();
+
+function drawCal(){
+
+cal.innerHTML="";
+const y=year.value;
+
+for(let m=0;m<12;m++){
+
+const days=new Date(y,m+1,0).getDate();
+
+const block=document.createElement("div");
+block.innerHTML=`<h3>${months[m]}</h3>`;
+
+for(let d=1; d<=days; d++){
+
+const date=`${d}.${m+1}.${y}`;
+
+const line=document.createElement("div");
+line.innerHTML=`<b>${date}</b>`;
+
+const cont=document.createElement("div");
+
+const btn=document.createElement("button");
+btn.textContent="Додати";
+
+btn.onclick=()=>createInc(date,cont);
+
+line.appendChild(btn);
+block.append(line,cont);
+
+loadInc(date,cont);
+}
+
+cal.appendChild(block);
+}
+}
+
+function saveInc(date,cont){
+const arr=[...cont.children].map(b=>({
+p:b.children[0].value,
+t:b.children[1].value,
+z:b.children[2].value
+}));
+localStorage.setItem("inc"+date,JSON.stringify(arr));
+}
+
+function loadInc(date,cont){
+const data=JSON.parse(localStorage.getItem("inc"+date)||"[]");
+data.forEach(d=>createInc(date,cont,d));
+}
+
+function createInc(date,cont,data={}){
+const box=document.createElement("div");
+box.className="box";
+
+const p=document.createElement("input");
+p.placeholder="Оплата";
+
+const t=document.createElement("input");
+t.placeholder="Товар";
+
+const z=document.createElement("input");
+z.placeholder="Заробіток";
+
+const del=document.createElement("button");
+del.textContent="X";
+del.className="small";
+
+if(data){
+p.value=data.p||"";
+t.value=data.t||"";
+z.value=data.z||"";
+}
+
+[p,t,z].forEach(i=>i.oninput=()=>saveInc(date,cont));
+
+del.onclick=()=>{
+box.remove();
+saveInc(date,cont);
+}
+
+box.append(p,t,z,del);
+cont.appendChild(box);
+}
+
+</script>
+</body>
+</html>
